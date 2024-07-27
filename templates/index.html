@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="invoice_container">
+    <div class="invoice_main">
+      <form>
+        <div class="invoice_header">
+          <img src="S_logo.png" alt="Logo" class="invoice_logo" />
+          <div class="invoice_name" id="saloonName"></div>
+        </div>
+        <div class="invoice_content">
+          <div class="invoice_left">
+            <h3>Invoice To:</h3>
+            <p id="customer_name"></p>
+            <p id="address"></p>
+            <p id="email"></p>
+          </div>
+          <div class="invoice_right">
+            <h5>InvoiceId: <span id="invoiceId"></span></h5>
+            <div class="invoice_date">
+              <p>Date of Invoice:</p>
+              <p id="invoiceDate"></p>
+            </div>
+            <div id="gstSection" style="display: none;">
+              <p>GST Number: <span id="gst_number"></span></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="invoice_table table-bordered">
+            <thead>
+              <tr style="border: 1px solid #787871; padding: 3px; background-color: #fff;">
+                <th style="width: 5%;">S. No.</th>
+                <th style="width: 30%;">DESCRIPTION</th>
+                <th style="width: 10%;">PRICE</th>
+                <th style="width: 10%;">QUANTITY</th>
+                <th style="width: 10%;">DISCOUNT</th>
+                <th style="width: 10%;">TAX AMT(18%)</th>
+                <th  style="width: 10%;">CGST(9%)</th>
+                <th  style="width: 10%;">SGST(9%)</th>
+                <th style="width: 10%; color: white; background-color: #0d6efd;">TOTAL AMT</th>
+              </tr>
+            </thead>
+            <tbody id="invoiceBody">
+              <!-- Services will be inserted here dynamically -->
+              <tr style="border: 1px solid #787871; padding: 3px; background-color: #fff;">
+                <th colspan="2" style="width: 20%; color: white; font-weight: 500; font-size: 15px; background-color: #0d6efd;">TOTAL</th>
+                <th style="width: 5%; padding: 0.7%;" class="text-center"></th>
+                <th style="width: 10%; padding: 0.7%;" class="text-center"></th>
+                <th style="width: 10%; padding: 0.7%;" class="text-center"></th>
+                <th style="width: 10%; padding: 0.7%;" class="text-center"></th>
+                <th style="width: 10%; padding: 0.7%;" class="text-center"></th>
+                <th style="width: 10%; padding: 0.7%;" class="text-center"></th>
+                <th style="width: 10%; padding: 0.7%; background-color: #0d6efd; color: white;"></th>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+        
+        <div class='inv_comm'>
+            <h4>Comments:</h4><p></p>  
+        </div>
+  
+          <div class='invoice_footer'>
+            <div class='invoice_footer_left'>
+              <h4>Amount in Words:</h4>
+              <p> Rupees Only</p>
+            </div>
+            <div class='invoice_footer_right'>
+              <h4>FINAL VALUE:</h4>
+              <p>Rs </p>
+            </div>
+          </div>
+          </div>
+        
+      </form>
+    </div>
+  </div>
+</body>
+</html>
