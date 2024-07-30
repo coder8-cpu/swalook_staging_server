@@ -544,13 +544,27 @@ class vendor_billing_pdf(CreateAPIView):
                 # response = requests.request("POST", url, data=payload, headers=headers)
             
             if serializer.data.get('email') != " ":
+                if "gmail" in serializer.data.get('email'):
+                    settings.EMAIL_BACKEND = 'smtp.gmail.com'
+                else:
+
+                    settings.EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+                settings.EMAIL_HOST = serializer.data.get('vendor_branch_name') # e.g., mail.yourdomain.com
+                settings.EMAIL_PORT = 465 # Update the port accordingly (587 for TLS, 465 for SSL, 25 for non-secure)
+                settings.EMAIL_USE_TLS = False  # Set to False if using SSL
+                settings.EMAIL_USE_SSL =  True  # Set to True if using SSL
+                settings.EMAIL_HOST_USER = serializer.data.get('vendor_email') # Your email username
+                settings.EMAIL_HOST_PASSWORD = serializer.data.get('vendor_password') # Your email password
+                settings.DEFAULT_FROM_EMAIL = serializer.data.get('vendor_email')    # The default "from" address for sending emails
+
                 # subject = "Swalook - Invoice"
                 # body = f"Hi {request.data.get('customer_name')}!\nWe hope you had a pleasant experience at {request.data.get('vendor_branch_name')}.\nWe are looking forward to servicing you again, attached is the invoice.\nThanks and Regards \nTeam {request.data.get('vendor_branch_name')}"
                 # send_mail(subject,body,'deshabandhumahavidyalaya@dbmcrj.ac.in',[request.data.get('email')])
                 with open(f"{BASE_DIR}/media/pdf/Invoice-{serializer.data.get('invoice')}.pdf", 'rb') as file:
-                    subject = "Swalook - Invoice"
+
+                    subject = f"{serializer.data.get('vendor_branch_name')} - Invoice"
                     body = f"Hi {request.data.get('customer_name')}!\nWe hope you had a pleasant experience at {request.data.get('vendor_branch_name')}.\nWe are looking forward to servicing you again, attached is the invoice.\nThanks and Regards \nTeam {request.data.get('vendor_branch_name')}"
-                    from_email = "info@swalook.in"
+                    from_email = serializer.data.get('vendor_email')
                     recipient_list = [request.data.get('email')]
                     file_content = file.read()
             

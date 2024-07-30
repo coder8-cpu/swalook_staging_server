@@ -262,7 +262,7 @@ class appointment_serializer(serializers.ModelSerializer):
         validated_data['file_pdf'] = self.context.get('request').FILES.get('file_pdf')
         super().create(validated_data)
         if validated_data['email'] != " ":
-            subject = "Swalook - Appointment"
+            subject = f"{self.context.get('branch_name')} - Appointment"
             body = f"Hi {validated_data['customer_name']}!\nYour appointment is booked and finalised for:{validated_data['booking_time']} | {validated_data['booking_date']}\nFor the following services: {validated_data['services']}\nSee you soon!\nThanks and Regards\nTeam {self.context.get('branch_name')}"
             send_mail(subject,body,'info@swalook.in',[validated_data['email']])
             
@@ -295,7 +295,7 @@ class Vendor_Pdf_Serializer(serializers.ModelSerializer):
         
     class Meta:
         model = VendorPdf
-        fields = ["customer_name","mobile_no","file","vendor_branch_name","email","invoice"]
+        fields = ["customer_name","mobile_no","file","vendor_branch_name","email","invoice","vendor_email","vendor_password"]
         extra_kwargs = {'id':{'read_only':True},}
         
     def create(self,validated_data):

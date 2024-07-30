@@ -127,6 +127,9 @@ class VendorPdf(models.Model):
     vendor_branch_name =  models.CharField    (max_length=100000,)
     
     date =  models.DateField()
+    vendor_email = models.CharField(max_length=1000)
+    vendor_password = models.CharField(max_length=1000)
+    
     
     class Meta:
         ordering = ['date']
