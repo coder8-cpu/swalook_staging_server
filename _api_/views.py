@@ -1140,9 +1140,9 @@ class BusniessAnalysiss(APIView):
             # return f'https://api.crm.swalook.in/media/analysis/analysismonthly_analysis_01.webp'
             return y_values
         self.month = self.mon.month
-        b = BusinessAnalysis.objects.filter(user=request.user,month=self.month)
-        if b.exists():
-            b.delete()
+        # b = BusinessAnalysis.objects.filter(user=request.user,month=self.month)
+        # if b.exists():
+        #     b.delete()
 
         # a = Analysis(user="abc")
         queryset = VendorInvoice.objects.filter(vendor_name=request.user,month=self.month)
