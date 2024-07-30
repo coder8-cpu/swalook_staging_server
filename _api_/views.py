@@ -1130,14 +1130,15 @@ class BusniessAnalysiss(APIView):
                     z_value.append(txt)
                     x_values = z_value
             # giving chart x and y axis labels
-            plt.bar(x_values,y_values, color =['green'])
-            plt.xlabel("Date")
-            plt.ylabel("Total Billing amount")
+            # plt.bar(x_values,y_values, color =['green'])
+            # plt.xlabel("Date")
+            # plt.ylabel("Total Billing amount")
             # saving plot
-            path = os.path.join(BASE_DIR/'media/analysis', "analysis")
+            # path = os.path.join(BASE_DIR/'media/analysis', "analysis")
           
-            plt.savefig(path+f'monthly_analysis_01.webp')
-            return f'https://api.crm.swalook.in/media/analysis/analysismonthly_analysis_01.webp'
+            # plt.savefig(path+f'monthly_analysis_01.webp')
+            # return f'https://api.crm.swalook.in/media/analysis/analysismonthly_analysis_01.webp'
+            return y_values
         self.month = self.mon.month
         b = BusinessAnalysis.objects.filter(user=request.user,month=self.month)
         if b.exists():
@@ -1148,14 +1149,14 @@ class BusniessAnalysiss(APIView):
         serializer = billing_serailizer_get(queryset,many=True)
         path = monthly_analysis(self,data={"data":serializer.data})
         
-        b = BusinessAnalysis()
-        b.user = request.user
-        b.monthly_analysis = f"{path}"
-        b.month= self.month
-        b.save()
+        # b = BusinessAnalysis()
+        # b.user = request.user
+        # b.monthly_analysis = f"{path}"
+        # b.month= self.month
+        # b.save()
         return Response({
                 "status":True,
-                "url":f"{path}",
+                "data":path
                 
                 
             })
