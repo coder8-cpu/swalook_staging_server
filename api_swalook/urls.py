@@ -64,7 +64,13 @@ urlpatterns = [
     path('api/swalook/send/otp/<email>/',ForgotPassword.as_view()),
     path('api/swalook/verify/<otp>/',ForgotPassword.as_view()),
     path('api/swalook/analysis/month/business/_01/',BusniessAnalysiss.as_view()),
-    
+    path('api/swalook/inventory/product/add/',Add_Inventory_Product.as_view()),
+    path('api/swalook/inventory/product/edit/',Add_Inventory_Product.as_view()),
+    path('api/swalook/inventory/product/delete/<id>/',Add_Inventory_Product.as_view()),
+    path('api/swalook/inventory/product/show/<branch_name>/',Add_Inventory_Product.as_view()),
+    path('api/swalook/inventory/invoice/',Bill_Inventory.as_view()),
+    path('api/swalook/loyality_program/add/customer/',Vendor_loyality_customer_profile.as_view()),
+
     
     
     

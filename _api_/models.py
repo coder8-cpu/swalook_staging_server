@@ -60,6 +60,34 @@ class SwalookUserProfile(models.Model):
 
     def __str__(self):
         return str(self.salon_name)
+class Vendor_Customers(models.Model):
+    id             = models.UUIDField (default=uuid.uuid4,primary_key=True,  editable=False)
+    user           = models.ForeignKey(User,on_delete=models.SET_NULL,null=True)
+
+    name        = models.CharField(max_length=30)
+
+    mobile_no  = models.CharField(max_length=30)
+    vendor_branch_name  = models.CharField(max_length=30,blank=True,null=True)
+    
+    email  = models.CharField(max_length=30)
+    membership_type  = models.CharField(max_length=30)
+    vendor_branch = models.ForeignKey(SalonBranch,on_delete=models.SET_NULL,null=True)
+    class Meta:
+        ordering = ['name']
+        verbose_name = "Vendor_Cutomers"
+class Vendor_Customer_Loyality_Points(models.Model):
+    id             = models.UUIDField (default=uuid.uuid4,primary_key=True,  editable=False)
+    user           = models.ForeignKey(User,on_delete=models.SET_NULL,null=True)
+
+    customer_name        = models.ForeignKey(Vendor_Customers,on_delete=models.SET_NULL,null=True)
+    current_customer_points = models.DecimalField(decimal_places=2,blank=True,null=True)
+    
+
+    vendor_branch = models.ForeignKey(SalonBranch,on_delete=models.SET_NULL,null=True)
+    class Meta:
+        ordering = ['customer_name']
+        verbose_name = "Vendor_Cutomers_Points"
+
 
 class Vendor_Service(models.Model): 
     id             = models.UUIDField (default=uuid.uuid4,primary_key=True,  editable=False)
@@ -107,8 +135,13 @@ class VendorInvoice(models.Model):
     week               = models.CharField    (max_length=30,null=True,blank=True)
     year               = models.CharField    (max_length=30,null=True,blank=True)
     vendor_branch = models.ForeignKey(SalonBranch,on_delete=models.SET_NULL,null=True)
+    vendor_customers_profile = models.ForeignKey(Vendor_Customers,on_delete=models.SET_NULL,null=True)
     vendor_branch_name =  models.CharField    (max_length=100000,)
     comment =  models.CharField    (max_length=100000,null=True,blank=True)
+    loyality_points = models.DecimalField(decimal_places=2,blank=True,null=True)
+    
+
+
    
     class Meta:
         ordering = ['date']
@@ -203,6 +236,58 @@ class HelpDesk(models.Model):
     def __str__(self) -> str:
         return str(self.user)
 
+class VendorInventoryProduct(models.Model):
+    id   = models.UUIDField   (default=uuid.uuid4,primary_key=True,  editable=False)
+    user = models.ForeignKey(User,on_delete=models.CASCADE,null=True)
+    
+    product_id = models.CharField(max_length=1000)
+    product_name = models.CharField(max_length=1000)
+    product_price = models.DecimalField(decimal_places=2)
+    product_description = models.CharField(max_length=10000)
+    vendor_branch = models.ForeignKey(SalonBranch,on_delete=models.SET_NULL,null=True)
+    vendor_branch_name = models.CharField(max_length=10000)
+    stocks_in_hand = models.IntegerField(default=0)
+    date               = models.DateField    ()
+    month              = models.CharField    (max_length=30,null=True,blank=True)
+    week               = models.CharField    (max_length=30,null=True,blank=True)
+    year               = models.CharField    (max_length=30,null=True,blank=True)
+    def __str__(self) -> str:
+        return str(self.product_name)
+
+
+
+
+class VendorInventoryInvoice(models.Model):
+    id       = models.UUIDField   (default=uuid.uuid4,primary_key=True,  editable=False)
+    customer = models.ForeignKey(Vendor_Customers,on_delete=models.SET_NULL,null=True)
+    mobile_no = models.CharField(max_length=10000)
+    email = models.CharField(max_length=10000)
+
+
+    user     = models.ForeignKey(User,on_delete=models.CASCADE,null=True)
+    vendor_branch = models.ForeignKey(SalonBranch,on_delete=models.SET_NULL,null=True)
+    vendor_branch_name = models.CharField(max_length=10000)
+    product_id = models.ForeignKey(VendorInventoryProduct,on_delete=models.SET_NULL,null=True)
+    product_price = models.DecimalField(decimal_places=2)
+    product_quantity = models.IntegerField()
+    loyality_points = models.DecimalField(decimal_places=2,)
+    total_prise        = models.DecimalField (default=0,    max_digits=100,       decimal_places=2,  null=True,  blank=True)
+    total_tax          = models.DecimalField (default=0,null=True,      blank=True,     decimal_places=2, max_digits=100)
+    total_discount     = models.DecimalField (null=True,      blank=True,     decimal_places=2, max_digits=100,default=0)
+    gst_number         = models.CharField    (max_length=20,  blank=True,     null=True) # device limit
+   
+    total_quantity     = models.IntegerField (default=0)
+    total_cgst         = models.DecimalField (default=0,null=True,      blank=True,     decimal_places=2, max_digits=100)
+    total_sgst         = models.DecimalField (default=0,null=True,      blank=True,     decimal_places=2, max_digits=100)
+    grand_total        = models.DecimalField (default=0,null=True,      blank=True,     decimal_places=2, max_digits=100)
+    date               = models.DateField    ()
+    month              = models.CharField    (max_length=30,null=True,blank=True)
+    week               = models.CharField    (max_length=30,null=True,blank=True)
+    year               = models.CharField    (max_length=30,null=True,blank=True)
+    
+    def __str__(self) -> str:
+        return str(self.product_id)
+    
 
 
 
