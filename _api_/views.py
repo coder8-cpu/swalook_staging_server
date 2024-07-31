@@ -1,5 +1,5 @@
 from rest_framework.views import APIView
-from rest_framework.generics import CreateAPIView,RetrieveAPIView,UpdateAPIView,ListAPIView
+from rest_framework.generics import CreateAPIView,RetrieveAPIView,UpdateAPIView,ListAPIView,DestroyAPIView
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
@@ -578,7 +578,14 @@ class vendor_billing_pdf(CreateAPIView):
             
                 # Send the email
                     email.send()
-                            
+                    settings.EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+                    settings.EMAIL_HOST = 'mail.swalook.in' # e.g., mail.yourdomain.com
+                    settings.EMAIL_PORT = 465 # Update the port accordingly (587 for TLS, 465 for SSL, 25 for non-secure)
+                    settings.EMAIL_USE_TLS = False  # Set to False if using SSL
+                    settings.EMAIL_USE_SSL =  True  # Set to True if using SSL
+                    settings.EMAIL_HOST_USER = 'info@swalook.in'  # Your email username
+                    settings.EMAIL_HOST_PASSWORD = 'rf4TwJbh456#' # Your email password
+                    settings.DEFAULT_FROM_EMAIL = 'info@swalook.in'  # The default "from" address for sending emails      
 
             return Response({
                 "status":True,
@@ -1080,7 +1087,7 @@ class ForgotPassword(APIView):
         user = SwalookUserProfile.objects.get(email=email)
         subject = "Swalook - OTP Verification"
         body = f"your 6 digit otp is {request.session.get('otp_990')}. \n Thank you\n Swalook"
-        send_mail(subject,body,'deshabandhumahavidyalaya@dbmcrj.ac.in',[user.email])
+        send_mail(subject,body,'info@swalook.in',[user.email])
         # except Exception:
         #     return Response({
         #     "status":"invalid email-id",
@@ -1193,20 +1200,127 @@ class help_desk(CreateAPIView):
             
             serializer.save()                                                       # the create method of serializer call here 
             ''' returning the status and info as response'''
-            subject = "Swalook - Query"
-            body = f"test mail {serializer.data}. \n Thank you\n Swalook"
-            send_mail(subject,body,'deshabandhumahavidyalaya@dbmcrj.ac.in',["info@swalook.in"])
+            subject = "Swalook - Query form "
+            body = f" {serializer.data}. \n Thank you\n Swalook"
+            send_mail(subject,body,'info@swalook.in',["info@swalook.in"])
             return Response({
             "status":True,
-            'from mail':'deshabandhumahavidyalaya@dbmcrj.ac.in',
+            'from mail':'info@swalook.in',
             'to mail':'info@swalook.in',
+            })
+            
+            
+        
+    
+    
+
+    
+class Add_Inventory_Product(CreateAPIView,UpdateAPIView,ListAPIView,DestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = Inventory_Product_Serializer
+    def post(self,request):
+        ''' deserialization of register user'''
+        serializer_objects           = self.serializer_class(request.data)                 # convertion of request.data into python native datatype
+        json_data                    = JSONRenderer().render(serializer_objects.data)      # rendering the data into json
+        stream_data_over_network     = io.BytesIO(json_data)                                 # streaming the data into bytes
+        accept_json_stream           = JSONParser().parse(stream_data_over_network)            # prases json data types data
+        ''' passing the json stream data into serializer '''
+    
+        serializer                   = self.serializer_class(data=accept_json_stream,context={'request':request})               # intializing serializer and
+        if serializer.is_valid():                                                                   # check if serializer.data is valid 
+                                                                                    # all the .validate_fieldname in the serializer will call here
+            ''' here the db call happen after accept  '''
+            
+            serializer.save()                                                       # the create method of serializer call here 
+            ''' returning the status and info as response'''
+           
+            return Response({
+            "status":True,
+            "data":serializer.data
+
             
             
 
         })
     
     
+    def put(self,request,id):
+        pass
+    def delete(self,request,id):
+        data_object = VendorInventoryProduct.objects.get(user=request.user,id=id)
+        data_object.delete()
+        return Response({
+            "status":True,
+           
+        })
 
-        
-        
-        
+
+    def list(self,request,branch_name):
+        data_object = VendorInventoryProduct.objects.filter(user=request.user,vendor_branch_name=branch_name)[::-1]
+        serializer_obj  = self.serializer_class(data_object,many=True)
+
+        return Response({
+            "status":True,
+            "data":serializer_obj.data
+        })
+    
+
+
+class Bill_Inventory(CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = Inventory_Product_Invoice_Serializer
+
+    def post(self,request):
+        ''' deserialization of register user'''
+        serializer_objects           = self.serializer_class(request.data)                 # convertion of request.data into python native datatype
+        json_data                    = JSONRenderer().render(serializer_objects.data)      # rendering the data into json
+        stream_data_over_network     = io.BytesIO(json_data)                                 # streaming the data into bytes
+        accept_json_stream           = JSONParser().parse(stream_data_over_network)            # prases json data types data
+        ''' passing the json stream data into serializer '''
+    
+        serializer                   = self.serializer_class(data=accept_json_stream,context={'request':request})               # intializing serializer and
+        if serializer.is_valid():                                                                   # check if serializer.data is valid 
+                                                                                    # all the .validate_fieldname in the serializer will call here
+            ''' here the db call happen after accept  '''
+            
+            serializer.save()                                                       # the create method of serializer call here 
+            ''' returning the status and info as response'''
+           
+            return Response({
+            "status":True,
+            "data":serializer.data
+            })
+    
+
+class Vendor_loyality_customer_profile(CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = VendorCustomerLoyalityProfileSerializer
+
+    def post(self,request):
+        ''' deserialization of register user'''
+        serializer_objects           = self.serializer_class(request.data)                 # convertion of request.data into python native datatype
+        json_data                    = JSONRenderer().render(serializer_objects.data)      # rendering the data into json
+        stream_data_over_network     = io.BytesIO(json_data)                                 # streaming the data into bytes
+        accept_json_stream           = JSONParser().parse(stream_data_over_network)            # prases json data types data
+        ''' passing the json stream data into serializer '''
+    
+        serializer                   = self.serializer_class(data=accept_json_stream,context={'request':request})               # intializing serializer and
+        if serializer.is_valid():                                                                   # check if serializer.data is valid 
+                                                                                    # all the .validate_fieldname in the serializer will call here
+            ''' here the db call happen after accept  '''
+            
+            serializer.save()                                                       # the create method of serializer call here 
+            ''' returning the status and info as response'''
+           
+            return Response({
+            "status":True,
+            "data":serializer.data
+            })
+    
+
+
+    
+
+
+    
+

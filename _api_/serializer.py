@@ -227,7 +227,88 @@ class billing_serailizer(serializers.ModelSerializer):
         validated_data['vendor_branch'] =  SalonBranch.objects.get(branch_name=validated_data['vendor_branch_name'])
        
         validated_data['year'] = mon.year
-        
+        try:
+                customer = Vendor_Customers.objects.get(mobile_no=validated_data['mobile_no'])
+        except Exception:
+                customer = Vendor_Customers()
+                customer.mobile_no = validated_data['mobile_no']
+                customer.email = validated_data['email']
+                customer.user = self.context.get('request').user
+                customer.vendor_branch = SalonBranch.objects.get(branch_name=validated_data['vendor_branch_name'])
+                customer.membership_type = None
+                customer.save()
+        if validated_data['grand_total'] >= 100:
+            
+            if customer.membership_type == "Silver":
+                try:
+
+                    loyality_program_object = Vendor_Customer_Loyality_Points.objects.get(customer_name=customer,vendor_branch=customer.vendor_branch,user=self.context.get('request').user)
+                    loyality_program_object.customer_name = validated_data['customer_name']
+                    loyality_program_object.current_customer_points  = loyality_program_object + 10
+                    loyality_program_object.vendor_branch = customer.vendor_branch
+                    loyality_program_object.user = self.context.get('request').user
+                    loyality_program_object.save()
+                    validated_data['loyality_points'] = 10
+                except Exception:
+                    loyality_program_object = Vendor_Customer_Loyality_Points()
+
+                    loyality_program_object.customer_name = validated_data['customer_name']
+                    loyality_program_object.current_customer_points  = loyality_program_object + 10
+                    loyality_program_object.vendor_branch = customer.vendor_branch
+                    loyality_program_object.user = self.context.get('request').user
+                    loyality_program_object.save()
+                    validated_data['loyality_points'] = 10
+            if customer.membership_type == "Gold":
+                try:
+
+                    loyality_program_object = Vendor_Customer_Loyality_Points.objects.get(customer_name=customer,vendor_branch=customer.vendor_branch,user=self.context.get('request').user)
+                    loyality_program_object.customer_name = validated_data['customer_name']
+                    loyality_program_object.current_customer_points  = loyality_program_object + 20
+                    loyality_program_object.vendor_branch = customer.vendor_branch
+                    loyality_program_object.user = self.context.get('request').user
+                    loyality_program_object.save()
+                    validated_data['loyality_points'] = 20
+                except Exception:
+                    loyality_program_object = Vendor_Customer_Loyality_Points()
+
+                    loyality_program_object.customer_name = validated_data['customer_name']
+                    loyality_program_object.current_customer_points  = loyality_program_object + 50
+                    loyality_program_object.vendor_branch = customer.vendor_branch
+                    loyality_program_object.user = self.context.get('request').user
+                    loyality_program_object.save()
+                    validated_data['loyality_points'] = 50
+
+            if customer.membership_type == "Platinum":
+                try:
+
+                    loyality_program_object = Vendor_Customer_Loyality_Points.objects.get(customer_name=customer,vendor_branch=customer.vendor_branch,user=self.context.get('request').user)
+                    loyality_program_object.customer_name = validated_data['customer_name']
+                    loyality_program_object.current_customer_points  = loyality_program_object + 10
+                    loyality_program_object.vendor_branch = customer.vendor_branch
+                    loyality_program_object.user = self.context.get('request').user
+                    loyality_program_object.save()
+                    validated_data['loyality_points'] = 10
+                except Exception:
+                    loyality_program_object = Vendor_Customer_Loyality_Points()
+
+                    loyality_program_object.customer_name = validated_data['customer_name']
+                    loyality_program_object.current_customer_points  = loyality_program_object + 10
+                    loyality_program_object.vendor_branch = customer.vendor_branch
+                    loyality_program_object.user = self.context.get('request').user
+                    loyality_program_object.save()
+                    validated_data['loyality_points'] = 10
+            
+            
+            
+
+
+
+                
+
+
+           
+        validated_data['vendor_customers_profile'] = customer
+
         super().create(validated_data)
        
         
@@ -396,3 +477,166 @@ class HelpDesk_Serializer(serializers.ModelSerializer):
         return super().create(validated_data)
     
        
+class Inventory_Product_Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = VendorInventoryProduct
+        fields = ["id","product_name","product_price","product_description","vendor_branch_name","product_id","stock_in_hand"]
+        extra_kwargs = {'id':{'read_only':True},}
+        
+    def create(self,validated_data):
+        date = dt.date.today()
+        mon = dt.date.today()
+        m_ = mon.month
+        y_ = mon.year
+      
+        if int(mon.day) >=1 and int(mon.day) <=7:
+
+            validated_data['week'] = "1"
+        if int(mon.day) >=8 and int(mon.day) <=15:
+            validated_data['week'] = "2"
+        if int(mon.day) >=16 and int(mon.day) <=23:
+            validated_data['week']= "3"
+        if int(mon.day) >=24 and int(mon.day) <=31:
+            validated_data['week']= "4"
+        validated_data['date'] = date
+        validated_data['month'] = mon.month
+       
+       
+        validated_data['year'] = mon.year
+        validated_data['user'] = self.context.get('request').user
+        validated_data['vendor_branch'] = SalonBranch.objects.get(branch_name=validated_data['vendor_branch_name'])
+        return super().create(validated_data)
+    
+
+class Inventory_Product_Invoice_Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = VendorInventoryInvoice
+        fields = ["id","product_id","product_price","vendor_branch_name","product_quantity","total_prise","total_quantity","total_tax","total_discount","grand_total","total_cgst","total_sgst","gst_number",]
+        extra_kwargs = {'id':{'read_only':True},}
+        
+    def create(self,validated_data):
+        date = dt.date.today()
+        mon = dt.date.today()
+
+        m_ = mon.month
+        y_ = mon.year
+      
+        if int(mon.day) >=1 and int(mon.day) <=7:
+
+            validated_data['week'] = "1"
+        if int(mon.day) >=8 and int(mon.day) <=15:
+            validated_data['week'] = "2"
+        if int(mon.day) >=16 and int(mon.day) <=23:
+            validated_data['week']= "3"
+        if int(mon.day) >=24 and int(mon.day) <=31:
+            validated_data['week']= "4"
+        validated_data['date'] = date
+        validated_data['month'] = mon.month
+        validated_data['year'] = mon.year
+        validated_data['user'] = self.context.get('request').user
+        validated_data['vendor_branch'] = SalonBranch.objects.get(branch_name=validated_data['vendor_branch_name'])
+        try:
+                customer = Vendor_Customers.objects.get(mobile_no=validated_data['mobile_no'])
+        except Exception:
+                customer = Vendor_Customers()
+                customer.mobile_no = validated_data['mobile_no']
+                customer.email = validated_data['email']
+                customer.user = self.context.get('request').user
+                customer.vendor_branch = SalonBranch.objects.get(branch_name=validated_data['vendor_branch_name'])
+                customer.membership_type = None
+                customer.save()
+        if validated_data['grand_total'] >= 100:
+           
+            if customer.membership_type == "Silver":
+                try:
+
+                    loyality_program_object = Vendor_Customer_Loyality_Points.objects.get(customer_name=customer,vendor_branch=customer.vendor_branch,user=self.context.get('request').user)
+                    loyality_program_object.customer_name = validated_data['customer_name']
+                    loyality_program_object.current_customer_points  = loyality_program_object + 10
+                    loyality_program_object.vendor_branch = customer.vendor_branch
+                    loyality_program_object.user = self.context.get('request').user
+                    loyality_program_object.save()
+                    validated_data['loyality_points'] = 10
+                except Exception:
+                    loyality_program_object = Vendor_Customer_Loyality_Points()
+
+                    loyality_program_object.customer_name = validated_data['customer_name']
+                    loyality_program_object.current_customer_points  = loyality_program_object + 10
+                    loyality_program_object.vendor_branch = customer.vendor_branch
+                    loyality_program_object.user = self.context.get('request').user
+                    loyality_program_object.save()
+                    validated_data['loyality_points'] = 10
+            if customer.membership_type == "Gold":
+                try:
+
+                    loyality_program_object = Vendor_Customer_Loyality_Points.objects.get(customer_name=customer,vendor_branch=customer.vendor_branch,user=self.context.get('request').user)
+                    loyality_program_object.customer_name = validated_data['customer_name']
+                    loyality_program_object.current_customer_points  = loyality_program_object + 20
+                    loyality_program_object.vendor_branch = customer.vendor_branch
+                    loyality_program_object.user = self.context.get('request').user
+                    loyality_program_object.save()
+                    validated_data['loyality_points'] = 20
+                except Exception:
+                    loyality_program_object = Vendor_Customer_Loyality_Points()
+
+                    loyality_program_object.customer_name = validated_data['customer_name']
+                    loyality_program_object.current_customer_points  = loyality_program_object + 50
+                    loyality_program_object.vendor_branch = customer.vendor_branch
+                    loyality_program_object.user = self.context.get('request').user
+                    loyality_program_object.save()
+                    validated_data['loyality_points'] = 50
+
+            if customer.membership_type == "Platinum":
+                try:
+
+                    loyality_program_object = Vendor_Customer_Loyality_Points.objects.get(customer_name=customer,vendor_branch=customer.vendor_branch,user=self.context.get('request').user)
+                    loyality_program_object.customer_name = validated_data['customer_name']
+                    loyality_program_object.current_customer_points  = loyality_program_object + 10
+                    loyality_program_object.vendor_branch = customer.vendor_branch
+                    loyality_program_object.user = self.context.get('request').user
+                    loyality_program_object.save()
+                    validated_data['loyality_points'] = 10
+                except Exception:
+                    loyality_program_object = Vendor_Customer_Loyality_Points()
+
+                    loyality_program_object.customer_name = validated_data['customer_name']
+                    loyality_program_object.current_customer_points  = loyality_program_object + 10
+                    loyality_program_object.vendor_branch = customer.vendor_branch
+                    loyality_program_object.user = self.context.get('request').user
+                    loyality_program_object.save()
+                    validated_data['loyality_points'] = 10
+            
+        validated_data['customer'] = customer  
+        product = VendorInventoryProduct.objects.get(product_id=validated_data['product_id'])
+        product.stocks_in_hand = product.stocks_in_hand - int(validated_data['product_quantity'])
+        product.save()
+            
+       
+        return super().create(validated_data)
+    
+
+
+class VendorCustomerLoyalityProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model =  Vendor_Customers
+        fields = ["id","name","mobile_no","email","membership_type","vendor_branch_name"]
+        extra_kwargs = {'id':{'read_only':True},}
+
+    def create(self,validated_data):
+        validated_data['user'] = self.context.get('request').user
+        vendor_branch_name = SalonBranch.objects.get(branch_name=validated_data['vendor_branch_name'])
+        validated_data['vendor_branch'] = vendor_branch_name
+        obj_loyality = Vendor_Customer_Loyality_Points()
+        obj_loyality.customer_name = validated_data['name']
+        if validated_data['membership_type'] == "Silver":
+            obj_loyality.current_customer_points = 10
+        if validated_data['membership_type'] == "Gold":
+            obj_loyality.current_customer_points = 20
+        if validated_data['membership_type'] == "Platinum":
+            obj_loyality.current_customer_points = 50
+        obj_loyality.user = self.context.get('request').user
+        obj_loyality.vendor_branch = vendor_branch_name
+        obj_loyality.save()
+
+        return super().create(validated_data)
+    
