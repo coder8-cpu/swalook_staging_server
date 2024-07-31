@@ -10,6 +10,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 import json
 import io
+from api_swalook import urls
 import requests
 from .serializer import *
 from rest_framework.authtoken.models import Token
@@ -925,23 +926,7 @@ class showendpoint(APIView):
         return Response({
             "status":True,
 
-            "endpoint 01":'api/swalook/endpoints/',
-            # "endpoint 02":'swalook_token_ii091/', 
-            # "endpoint 03":'swalook_token_ii091/refresh/',
-            "endpoint 04":'api/swalook/create_account/',
-            "endpoint 05":'api/swalook/login/',
-            "endpoint 06":'api/swalook/billing/',
-            "endpoint 07":'api/swalook/appointment/',
-            "endpoint 08":'api/swalook/edit/appointment/<id>/',
-            "endpoint 09":'api/swalook/delete/appointment/<id>/',
-            "endpoint 10":'api/swalook/preset-day-appointment/',
-            "endpoint 11":'api/swalook/services/',
-            "endpoint 12":'api/swalook/add/services/',
-            "endpoint 13":'api/swalook/delete/services/',
-            "endpoint 14":'api/swalook/edit/services/',
-            "endpoint 15":'api/swalook/get_specific/appointment/<id>',
-            "endpoint 16":'api/swalook/table/services/',
-
+            "endpoints": urls.urlpatterns
             
         })
 
