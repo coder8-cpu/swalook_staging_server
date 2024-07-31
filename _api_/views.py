@@ -926,7 +926,7 @@ class showendpoint(APIView):
         return Response({
             "status":True,
 
-            "endpoints": urls.urlpatterns
+            "endpoints": ""
             
         })
 
