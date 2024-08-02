@@ -1229,8 +1229,9 @@ class Add_Inventory_Product(CreateAPIView,UpdateAPIView,ListAPIView,DestroyAPIVi
         })
     
     
-    def put(self,request,id):
+    def edit(self,request,id):
         pass
+
     def delete(self,request,id):
         data_object = VendorInventoryProduct.objects.get(user=request.user,id=id)
         data_object.delete()
@@ -1277,7 +1278,7 @@ class Bill_Inventory(CreateAPIView):
             })
     
 
-class Vendor_loyality_customer_profile(CreateAPIView):
+class Vendor_loyality_customer_profile(CreateAPIView,ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = VendorCustomerLoyalityProfileSerializer
 
@@ -1301,8 +1302,14 @@ class Vendor_loyality_customer_profile(CreateAPIView):
             "status":True,
             "data":serializer.data
             })
-    
+    def list(self,request,branch_name):
+        data_object = VendorCustomerLoyalityProfileSerializer.objects.filter(user=request.user,vendor_branch_name=branch_name)[::-1]
+        serializer_obj  = self.serializer_class(data_object,many=True)
 
+        return Response({
+            "status":True,
+            "data":serializer_obj.data
+        })
 
     
 
