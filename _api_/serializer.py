@@ -5,7 +5,7 @@ from rest_framework import serializers
 from .models import *
 from rest_framework.response import Response
 import datetime as dt
-import random as r 
+import random as r
 from django.core.mail import send_mail
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.hashers import make_password,check_password
@@ -15,6 +15,8 @@ from api_swalook.settings import BASE_DIR
 from api_swalook import settings
 import pdfkit as p
 import http.client
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 class signup_serializer(ModelSerializer):
     class Meta:
         model = SwalookUserProfile
@@ -61,42 +63,42 @@ class signup_serializer(ModelSerializer):
         user.set_password("w!==?0id")
         user.save()
         return super().create(validated_data)
-        
+
 class login_serializer(serializers.Serializer):
 
     mobileno = serializers.CharField()
     password = serializers.CharField()
 
-  
+
     def create(self, validated_data):
-       
+
         user = auth.authenticate(username=validated_data['mobileno'],password=validated_data['password'])
         if user is not None:
            auth.login(self.context.get('request'),user)
-       
+
 
 
         return "ok!"
-        
-        
+
+
 
 class centralized_login_serializer(serializers.Serializer):
 
     mobileno = serializers.CharField()
     password = serializers.CharField()
 
-    
+
     def create(self, validated_data):
-       
+
         user = auth.authenticate(username=validated_data['mobileno'],password=validated_data['password'])
         if user is not None:
            auth.login(self.context.get('request'),user)
            token = Token.objects.get_or_create(user=user)
-           
+
            return ["owner",token]
-       
+
         else:
-            
+
             staff_object = SalonBranch.objects.filter(staff_name=validated_data['mobileno'],password=validated_data.get('password'))
             if len(staff_object) == 1:
                 u = SwalookUserProfile.objects.filter(mobile_no=staff_object[0].vendor_name)
@@ -107,7 +109,7 @@ class centralized_login_serializer(serializers.Serializer):
                     return ["staff",token]
                 else:
                     return "error-509"
-                    
+
             else:
                 u = User.objects.filter(username=validated_data['mobileno'])
                 if len(u) == 1:
@@ -121,63 +123,63 @@ class centralized_login_serializer(serializers.Serializer):
                     else:
                          return "error-508"
                 else:
-                    
+
                     return "error-507"
             return "main-510"
-        
 
-        
+
+
 class admin_login_serializer(serializers.Serializer):
 
     mobileno = serializers.CharField()
     password = serializers.CharField()
 
-  
+
     def create(self, validated_data):
-     
+
         u = SwalookUserProfile.objects.get(mobile_no=validated_data.get('mobileno'))
-  
+
         branch = SalonBranch.objects.get(admin_password=validated_data.get('password'))
         user = auth.authenticate(username=u.mobile_no,password=u.enc_pwd)
         auth.login(self.context.get('request'),user)
         token = Token.objects.get_or_create(user=user)
-            
-                
-   
-        
-            
+
+
+
+
+
         # u = User.objects. # user = auth.authenticate(username=u.username,password=u.password)
-            
+
         # if user is not None:
         #     auth.login(self.context.get('request'),user)
                 # get(pk=user_sub.ve)
-            
-       
+
+
 
 
         return token
-        
-        
+
+
 class staff_login_serializer(serializers.Serializer):
 
     mobileno = serializers.CharField()
     password = serializers.CharField()
 
-  
+
     def create(self, validated_data):
-       
+
         user_sub = SalonBranch.objects.get(staff_name=validated_data['mobileno'],password=validated_data['password'])
         # if len(user_sub) == 1:
         #     main_user = SwalookUserProfile.objects.get(id=user_sub[0].vendor_name_id)
-            
-            
+
+
         #     user = auth.authenticate(username=main_user.mobile_no,password=main_user.enc_pwd)
-            
+
         #     if user is not None:
         #         auth.login(self.context.get('request'),user)
 
         return user_sub.vendor_name
-    
+
 
 class update_profile_serializer(serializers.Serializer):
 
@@ -185,7 +187,7 @@ class update_profile_serializer(serializers.Serializer):
     profile_pic = serializers.ImageField()
     s_gst_percent = serializers.CharField()
     c_gst_percent = serializers.CharField()
-  
+
     def update(self, validated_data):
        object = SwalookUserProfile.objects.get(mobile_no=str(self.context.get('request').user))
        object.profile_pic = self.context.get('request').FILES.get('profile_pic')
@@ -194,9 +196,9 @@ class update_profile_serializer(serializers.Serializer):
        object.c_gst_percent = validated_data['c_gst_percent']
        object.save()
        return super().update(validated_data)
-    
-        
-    
+
+
+
 class billing_serailizer(serializers.ModelSerializer):
     class Meta:
         model = VendorInvoice
@@ -207,7 +209,7 @@ class billing_serailizer(serializers.ModelSerializer):
         mon = dt.date.today()
         m_ = mon.month
         y_ = mon.year
-      
+
         if int(mon.day) >=1 and int(mon.day) <=7:
 
             validated_data['week'] = "1"
@@ -217,15 +219,15 @@ class billing_serailizer(serializers.ModelSerializer):
             validated_data['week']= "3"
         if int(mon.day) >=24 and int(mon.day) <=31:
             validated_data['week']= "4"
-        
-      
-        
-     
+
+
+
+
         validated_data['vendor_name'] = self.context.get('request').user
         validated_data['date'] = date
         validated_data['month'] = mon.month
         validated_data['vendor_branch'] =  SalonBranch.objects.get(branch_name=validated_data['vendor_branch_name'])
-       
+
         validated_data['year'] = mon.year
         try:
                 customer = Vendor_Customers.objects.get(mobile_no=validated_data['mobile_no'])
@@ -238,7 +240,7 @@ class billing_serailizer(serializers.ModelSerializer):
                 customer.membership_type = None
                 customer.save()
         if validated_data['grand_total'] >= 100:
-            
+
             if customer.membership_type == "Silver":
                 try:
 
@@ -297,48 +299,48 @@ class billing_serailizer(serializers.ModelSerializer):
                     loyality_program_object.user = self.context.get('request').user
                     loyality_program_object.save()
                     validated_data['loyality_points'] = 10
-            
-            
-            
 
 
 
-                
 
 
-           
+
+
+
+
+
         validated_data['vendor_customers_profile'] = customer
 
         super().create(validated_data)
-       
-        
-      
-       
-           
+
+
+
+
+
 
         return  validated_data['slno']
-    
+
 class billing_serailizer_get(serializers.ModelSerializer):
     class Meta:
         model = VendorInvoice
         fields = "__all__"
-        
+
 class app_serailizer_get(serializers.ModelSerializer):
     class Meta:
         model = VendorAppointment
         fields = "__all__"
-        
+
 
 class appointment_serializer(serializers.ModelSerializer):
     class Meta:
         model = VendorAppointment
- 
+
         fields = ["id","customer_name","mobile_no","email","services","booking_date","booking_time","comment","file_pdf"]
         extra_kwargs = {'id':{'read_only':True},}
     def create(self,validated_data):
         validated_data['vendor_name'] = self.context.get('request').user
         validated_data['vendor_branch'] = SalonBranch.objects.get(branch_name=self.context.get('branch_name'))
-        
+
         validated_data['date'] = dt.date.today()
         validated_data['file_pdf'] = self.context.get('request').FILES.get('file_pdf')
         super().create(validated_data)
@@ -346,19 +348,19 @@ class appointment_serializer(serializers.ModelSerializer):
             subject = f"{self.context.get('branch_name')} - Appointment"
             body = f"Hi {validated_data['customer_name']}!\nYour appointment is booked and finalised for:{validated_data['booking_time']} | {validated_data['booking_date']}\nFor the following services: {validated_data['services']}\nSee you soon!\nThanks and Regards\nTeam {self.context.get('branch_name')}"
             send_mail(subject,body,'info@swalook.in',[validated_data['email']])
-            
+
         # if validated_data['mobile_no'] != None:
 
         #     url = f"{WP_API_URL}"
-            
+
         #     payload = f"token={WP_INS_TOKEN}&to=+91{validated_data['mobile_no']}&body=Hi {validated_data['customer_name']}! Your appointment is booked and finalised for:{validated_data['booking_time']} |{validated_data['booking_date']} For the following services: {validated_data['services']} See you soon! Thanks & Regards Team {self.context.get('branch_name')}"
         #     payload = payload.encode('utf8').decode('iso-8859-1')
         #     headers = {'content-type': 'application/x-www-form-urlencoded'}
-            
+
         #     response = requests.request("POST", url, data=payload, headers=headers)
 
         return "ok"
-    
+
 class update_appointment_serializer(serializers.Serializer):
     customer_name  = serializers.CharField()
     mobile_no      = serializers.CharField()
@@ -373,31 +375,31 @@ class update_appointment_serializer(serializers.Serializer):
 
 
 class Vendor_Pdf_Serializer(serializers.ModelSerializer):
-        
+
     class Meta:
         model = VendorPdf
         fields = ["customer_name","mobile_no","file","vendor_branch_name","email","invoice","vendor_email","vendor_password"]
         extra_kwargs = {'id':{'read_only':True},}
-        
+
     def create(self,validated_data):
         vendor_branch_name = SalonBranch.objects.get(branch_name=validated_data['vendor_branch_name'])
         validated_data['vendor_branch'] = vendor_branch_name
-        
-      
+
+
         validated_data['date'] = dt.date.today()
         validated_data['file'] = self.context.get('request').FILES.get('file')
-        
+
         return super().create(validated_data)
-        
-        
-        
-    
-
-    
 
 
 
-    
+
+
+
+
+
+
+
 class service_serializer(serializers.ModelSerializer):
     class Meta:
         model = Vendor_Service
@@ -406,14 +408,14 @@ class service_serializer(serializers.ModelSerializer):
     def create(self,validated_data):
         validated_data['user'] = self.context.get('request').user
         return super().create(validated_data)
-    
+
 class service_update_serializer(serializers.ModelSerializer):
     class Meta:
         model = Vendor_Service
         fields = ["service","service_price","service_duration",]
     def create(self,validated_data):
         queryset = Vendor_Service.objects.get(id=self.context.get('id'))
-        
+
         queryset.delete()
         queryset = Vendor_Service()
 
@@ -425,7 +427,7 @@ class service_update_serializer(serializers.ModelSerializer):
         queryset.save()
 
         return super().create(validated_data)
-    
+
 
 
 class service_name_serializer(serializers.ModelSerializer):
@@ -442,8 +444,8 @@ class user_data_set_serializer(serializers.ModelSerializer):
     class Meta:
         model = SwalookUserProfile
         fields = "__all__"
-        
-        
+
+
 class staff_serializer_get(serializers.ModelSerializer):
     class Meta:
         model = VendorStaff
@@ -454,41 +456,41 @@ class branch_serializer(serializers.ModelSerializer):
         model = SalonBranch
         fields = ["id","staff_name","branch_name","password","admin_password","staff_url","admin_url"]
         extra_kwargs = {'id':{'read_only':True},}
-        
+
     def create(self,validated_data):
         validated_data['vendor_name'] = self.context.get('request').user
         validated_data['admin_password'] = str(self.context.get('request').user)[:3]+str(validated_data['branch_name'])[:3]
-        validated_data['staff_url'] =  validated_data['branch_name']+"/staff/" 
-        validated_data['admin_url'] = validated_data['branch_name']+"/admin/" 
+        validated_data['staff_url'] =  validated_data['branch_name']+"/staff/"
+        validated_data['admin_url'] = validated_data['branch_name']+"/admin/"
         validated_data['password'] = validated_data['password']
-        validated_data['branch_name'] = validated_data['branch_name'] 
+        validated_data['branch_name'] = validated_data['branch_name']
         validated_data['staff_name'] = validated_data['staff_name']
-     
+
         return super().create(validated_data)
-    
+
 class HelpDesk_Serializer(serializers.ModelSerializer):
     class Meta:
         model = HelpDesk
         fields = ["id","first_name","last_name","mobile_no","email","message",]
         extra_kwargs = {'id':{'read_only':True},}
-        
+
     def create(self,validated_data):
         validated_data['user'] = self.context.get('request').user
         return super().create(validated_data)
-    
-       
+
+
 class Inventory_Product_Serializer(serializers.ModelSerializer):
     class Meta:
         model = VendorInventoryProduct
-        fields = ["id","product_name","product_price","product_description","vendor_branch_name","product_id","stock_in_hand"]
+        fields = ["id","product_name","product_price","product_description","vendor_branch_name","product_id","stocks_in_hand"]
         extra_kwargs = {'id':{'read_only':True},}
-        
+
     def create(self,validated_data):
         date = dt.date.today()
         mon = dt.date.today()
         m_ = mon.month
         y_ = mon.year
-      
+
         if int(mon.day) >=1 and int(mon.day) <=7:
 
             validated_data['week'] = "1"
@@ -500,27 +502,27 @@ class Inventory_Product_Serializer(serializers.ModelSerializer):
             validated_data['week']= "4"
         validated_data['date'] = date
         validated_data['month'] = mon.month
-       
-       
+
+
         validated_data['year'] = mon.year
         validated_data['user'] = self.context.get('request').user
         validated_data['vendor_branch'] = SalonBranch.objects.get(branch_name=validated_data['vendor_branch_name'])
         return super().create(validated_data)
-    
+
 
 class Inventory_Product_Invoice_Serializer(serializers.ModelSerializer):
     class Meta:
         model = VendorInventoryInvoice
         fields = ["id","product_id","product_price","vendor_branch_name","product_quantity","total_prise","total_quantity","total_tax","total_discount","grand_total","total_cgst","total_sgst","gst_number",]
         extra_kwargs = {'id':{'read_only':True},}
-        
+
     def create(self,validated_data):
         date = dt.date.today()
         mon = dt.date.today()
 
         m_ = mon.month
         y_ = mon.year
-      
+
         if int(mon.day) >=1 and int(mon.day) <=7:
 
             validated_data['week'] = "1"
@@ -546,7 +548,7 @@ class Inventory_Product_Invoice_Serializer(serializers.ModelSerializer):
                 customer.membership_type = None
                 customer.save()
         if validated_data['grand_total'] >= 100:
-           
+
             if customer.membership_type == "Silver":
                 try:
 
@@ -605,15 +607,15 @@ class Inventory_Product_Invoice_Serializer(serializers.ModelSerializer):
                     loyality_program_object.user = self.context.get('request').user
                     loyality_program_object.save()
                     validated_data['loyality_points'] = 10
-            
-        validated_data['customer'] = customer  
+
+        validated_data['customer'] = customer
         product = VendorInventoryProduct.objects.get(product_id=validated_data['product_id'])
         product.stocks_in_hand = product.stocks_in_hand - int(validated_data['product_quantity'])
         product.save()
-            
-       
+
+
         return super().create(validated_data)
-    
+
 
 
 class VendorCustomerLoyalityProfileSerializer(serializers.ModelSerializer):
@@ -634,9 +636,44 @@ class VendorCustomerLoyalityProfileSerializer(serializers.ModelSerializer):
             obj_loyality.current_customer_points = 20
         if validated_data['membership_type'] == "Platinum":
             obj_loyality.current_customer_points = 50
+        
+
+        def get_date_after_six_months(input_date_str):
+            # Convert input string to datetime object
+            input_date = datetime.strptime(input_date_str, '%Y-%m-%d')
+
+            # Calculate the date after six months
+            date_after_six_months = input_date + relativedelta(months=6)
+
+            # Convert the result back to a string in the desired format
+            return date_after_six_months.strftime('%Y-%m-%d')
+
+
+
+        result = get_date_after_six_months(dt.date.today)
+        obj_loyality.issue_date = dt.date.today()
+        obj_loyality.expire_date = result
         obj_loyality.user = self.context.get('request').user
         obj_loyality.vendor_branch = vendor_branch_name
         obj_loyality.save()
 
         return super().create(validated_data)
+
+class VendorLoyalitySettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model =  VendorLoyalitySettings
+        fields = ["id","vendor_branch_name","program_type","duration","points_hold"]
+        extra_kwargs = {'id':{'read_only':True},}
+
+    def create(self,validated_data):
+        validated_data['user'] = self.context.get('request').user
+
+
+        return super().create(validated_data)
     
+
+class VendorLoyalityTypeSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = VendorLoyalityProgramTypes
+            fields = ["id","vendor_branch_name","program_type","duration","points_hold"]
+            extra_kwargs = {'id':{'read_only':True},}

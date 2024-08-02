@@ -619,21 +619,7 @@ class VendorAppointments(CreateAPIView,ListAPIView,):
             serializer.save()                                                       # the create method of serializer call here 
             ''' returning the status and info as response'''
   
-            if request.data.get('mobile_no') != " ":
-                url = f"https://api.ultramsg.com/{WP_INS_ID}/messages/chat"
-                
-                payload = f"token={WP_INS_TOKEN}&to=+91{request.data.get('mobile_no')}&body=Hi {request.data.get('customer_name')}!\nYour appointment is booked and finalised for:{request.data.get('booking_time')} | {request.data.get('booking_date')}\nFor the following services: {request.data.get('services')}\nSee you soon!\nThanks and Regards\nTeam {branch_name}"
-                payload = payload.encode('utf8').decode('iso-8859-1')
-                headers = {'content-type': 'application/x-www-form-urlencoded'}
-                
-                response = requests.request("POST", url, data=payload, headers=headers)
-                
-                return Response({
-                    "status":True,
-                    "msg":"wp msg sent",
-                
-    
-                })
+            
                 
             return Response({
                     "status":True,
@@ -1229,8 +1215,9 @@ class Add_Inventory_Product(CreateAPIView,UpdateAPIView,ListAPIView,DestroyAPIVi
         })
     
     
-    def put(self,request,id):
+    def edit(self,request,id):
         pass
+
     def delete(self,request,id):
         data_object = VendorInventoryProduct.objects.get(user=request.user,id=id)
         data_object.delete()
@@ -1277,7 +1264,7 @@ class Bill_Inventory(CreateAPIView):
             })
     
 
-class Vendor_loyality_customer_profile(CreateAPIView):
+class Vendor_loyality_customer_profile(CreateAPIView,ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = VendorCustomerLoyalityProfileSerializer
 
@@ -1301,8 +1288,14 @@ class Vendor_loyality_customer_profile(CreateAPIView):
             "status":True,
             "data":serializer.data
             })
-    
+    def list(self,request,branch_name):
+        data_object = VendorCustomerLoyalityProfileSerializer.objects.filter(user=request.user,vendor_branch_name=branch_name)[::-1]
+        serializer_obj  = self.serializer_class(data_object,many=True)
 
+        return Response({
+            "status":True,
+            "data":serializer_obj.data
+        })
 
     
 
