@@ -8,11 +8,17 @@ from rest_framework.decorators import permission_classes
 from django.contrib import auth
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
+from django.db.models.signals import post_save, post_delete
 import json
+from django.core.cache import cache
 import io
 from api_swalook import urls
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 import requests
 from .serializer import *
+from django.dispatch import receiver
+from django.utils.cache import get_cache_key
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
 from django.core.mail import send_mail
@@ -317,18 +323,33 @@ class Centralized_login(CreateAPIView):
 
 class VendorServices(APIView):
     permission_classes = [IsAuthenticated]
-    
+    def __init__(self):
+        self.cache_key  = None
+   
+    def dispatch(self, request, *args, **kwargs):
+        self.cache_key = f"VendorServices/{request.user}"
+        return super().dispatch(request, *args, **kwargs)
     def get(self,request):
-        queryset = Vendor_Service.objects.filter(user=request.user).order_by('service')
-        serialized_data = service_name_serializer(queryset,many=True)
         
-        return Response({
-                'status':True,                                                      # corresponding to ---> 'key:value' for access data
-                'code':302,
-                'service':serialized_data.data
+        cached_data = cache.get(self.cache_key)
+
+        if cached_data is None:
+            queryset = VendorService.objects.filter(user=request.user).order_by('service')
+            serialized_data = service_name_serializer(queryset,many=True)
+            cache.set(self.cache_key, serialized_data.data, timeout=60 * 30)
+            return Response({
+                    'status':True,                                                      # corresponding to ---> 'key:value' for access data
+                    'code':302,
+                    'service':serialized_data.data
                 
 
             },)
+        else:
+            return Response({
+                    'status':True,                                                      # corresponding to ---> 'key:value' for access data
+                    'code':302,
+                    'service':cached_data['service']
+            })
     
 class Add_vendor_service(CreateAPIView):
     permission_classes = [IsAuthenticated]
@@ -388,8 +409,8 @@ class Edit_service(CreateAPIView):
     
 class Delete_service(APIView):
     permission_classes = [IsAuthenticated]
-    def get(self,request,id):
-        queryset = Vendor_Service.objects.get(id=id)
+    def delete(self,request,id):
+        queryset = VendorService.objects.get(id=id)
         queryset.delete()
 
         return Response({
@@ -403,7 +424,7 @@ class Delete_service(APIView):
             
 class Delete_invoice(APIView):
     permission_classes = [IsAuthenticated]
-    def get(self,request,id):
+    def delete(self,request,id):
         queryset = VendorInvoice.objects.get(id=id)
         queryset.delete()
 
@@ -417,15 +438,30 @@ class Delete_invoice(APIView):
 
 
 class Table_service(APIView):
- 
-    def get(self,request):
-        query_set = Vendor_Service.objects.filter(user=request.user).order_by('service')
-        serializer_obj = service_serializer(query_set,many=True)
-        return Response({
-            "status":True,
-            "table_data":serializer_obj.data,
 
-        })
+    def __init__(self):
+        self.cache_key  = None
+   
+    def dispatch(self, request, *args, **kwargs):
+        self.cache_key = f"VendorServicesTable/{request.user}"
+        return super().dispatch(request, *args, **kwargs)
+    def get(self,request):
+        cached_data = cache.get(self.cache_key)
+        if cached_data is None:
+            query_set = VendorService.objects.filter(user=request.user).order_by('service')
+            serializer_obj = service_serializer(query_set,many=True)
+            cache.set(self.cache_key, serializer_obj.data, timeout=60 * 30)
+            return Response({
+                "status":True,
+                "table_data":serializer_obj.data,
+
+            })
+        else:
+            return Response({
+                "status":True,
+                "table_data":cached_data['table_data'],
+
+            })
 class get_slno(RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     def get(self,request):
@@ -491,7 +527,7 @@ class vendor_billing(CreateAPIView,ListAPIView,):
             
 
         })
-    
+
     def list(self,request):
       
         query_set = VendorInvoice.objects.filter(vendor_name=request.user)[::-1]
@@ -632,7 +668,7 @@ class VendorAppointments(CreateAPIView,ListAPIView,):
             
 
             })
-    
+   
     def list(self,request):
         query_set = VendorAppointment.objects.filter(vendor_name=request.user)[::-1]
         serializer_obj = appointment_serializer(query_set,many=True)
@@ -718,7 +754,7 @@ class edit_profile(APIView):
 
 class delete_appointment(APIView):
     permission_classes = [IsAuthenticated]
-    def get(self,request,id):
+    def delete(self,request,id):
         queryset = VendorAppointment.objects.get(id=id)
         
         queryset.delete()
@@ -789,7 +825,7 @@ class VendorBranch(CreateAPIView,RetrieveAPIView):
 
         })
   
-    
+   
     def get(self,request):
         query_set = SalonBranch.objects.filter(vendor_name=request.user)[::-1]
         serializer_obj = branch_serializer(query_set,many=True)
@@ -839,7 +875,7 @@ class edit_branch(APIView):
 
 class delete_branch(APIView):
     permission_classes = [IsAuthenticated]
-    def get(self,request,id):
+    def delete(self,request,id):
         queryset = SalonBranch.objects.get(id=id)
         
         queryset.delete()
@@ -880,6 +916,9 @@ class user_verify(APIView):
 
 class present_day_appointment(APIView):
     permission_classes = [IsAuthenticated]
+   
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
     def get(self,request):
         date = dt.date.today()
         query_set = VendorAppointment.objects.filter(vendor_name=request.user,date=date).order_by("booking_time")
@@ -930,7 +969,7 @@ class update_files_pull(APIView):
             result = subprocess.run(command, capture_output=True, text=True, check=True)
             output = result.stdout
         except subprocess.CalledProcessError as e:
-            # Handle any errors that occur during command execution
+         
             output = f"Error: {e.stderr}"
         return Response({
             "server updated" : output,
@@ -958,7 +997,7 @@ class restart_server(APIView):
             "status": True,
             })
         except subprocess.CalledProcessError as e:
-            # Handle any errors that occur during command execution
+        
             output = f"Error: {e.stderr}"
             return Response({
             "error":output,
@@ -979,7 +1018,7 @@ class get_current_user_profile(APIView):
 
 class get_present_day_bill(APIView):
     permission_classes = [IsAuthenticated]
-    
+  
     def get(self,request):
         data = VendorInvoice.objects.filter(date=dt.date.today())
         serializer_data = billing_serailizer_get(data,many=True)
@@ -1288,6 +1327,7 @@ class Vendor_loyality_customer_profile(CreateAPIView,ListAPIView):
             "status":True,
             "data":serializer.data
             })
+
     def list(self,request,branch_name):
         data_object = VendorCustomerLoyalityProfileSerializer.objects.filter(user=request.user,vendor_branch_name=branch_name)[::-1]
         serializer_obj  = self.serializer_class(data_object,many=True)
@@ -1299,6 +1339,108 @@ class Vendor_loyality_customer_profile(CreateAPIView,ListAPIView):
 
     
 
+@receiver(post_save, sender=VendorService)
+def clear_cache_on_save(sender, instance, created, **kwargs):
+
+    cache.delete(f"VendorServices/{instance.user.id}")
+    cache.delete(f"VendorServicesTable/{instance.user.id}")
+
+
+@receiver(post_delete, sender=VendorService)
+def clear_cache_on_delete(sender, instance, **kwargs):
+    
+    cache.delete(f"VendorServices/{instance.user.id}")
+    cache.delete(f"VendorServicesTable/{instance.user.id}")
 
     
+
+# receiver(post_save, sender=VendorInvoice)
+# def clear_cache_on_save(sender, instance, created, **kwargs):
+
+#     views_to_clear = ['ViewA', 'ViewB']  
+#     for view_name in views_to_clear:
+#         cache_key = get_cache_key(view_name, instance.user.id)
+#         cache.delete(cache_key)
+
+
+# @receiver(post_delete, sender=VendorInvoice)
+# def clear_cache_on_delete(sender, instance, **kwargs):
+    
+#     views_to_clear = ['ViewA', 'ViewB']  
+#     for view_name in views_to_clear:
+#         cache_key = get_cache_key(view_name, instance.user.id)
+#         cache.delete(cache_key)
+
+# receiver(post_save, sender=VendorAppointment)
+# def clear_cache_on_save(sender, instance, created, **kwargs):
+
+#     views_to_clear = ['ViewA', 'ViewB']  
+#     for view_name in views_to_clear:
+#         cache_key = get_cache_key(view_name, instance.user.id)
+#         cache.delete(cache_key)
+
+# @receiver(post_delete, sender=VendorAppointment)
+# def clear_cache_on_delete(sender, instance, **kwargs):
+    
+#     views_to_clear = ['ViewA', 'ViewB']  
+#     for view_name in views_to_clear:
+#         cache_key = get_cache_key(view_name, instance.user.id)
+#         cache.delete(cache_key)
+
+# receiver(post_save, sender=BusinessAnalysis)
+# def clear_cache_on_save(sender, instance, created, **kwargs):
+
+#     views_to_clear = ['ViewA', 'ViewB']  
+#     for view_name in views_to_clear:
+#         cache_key = get_cache_key(view_name, instance.user.id)
+#         cache.delete(cache_key)
+    
+
+# receiver(post_save, sender=VendorInventoryProduct)
+# def clear_cache_on_save(sender, instance, created, **kwargs):
+
+#     views_to_clear = ['ViewA', 'ViewB']  
+#     for view_name in views_to_clear:
+#         cache_key = get_cache_key(view_name, instance.user.id)
+#         cache.delete(cache_key)
+    
+# @receiver(post_delete, sender=VendorInventoryProduct)
+# def clear_cache_on_delete(sender, instance, **kwargs):
+    
+#     views_to_clear = ['ViewA', 'ViewB']  
+#     for view_name in views_to_clear:
+#         cache_key = get_cache_key(view_name, instance.user.id)
+#         cache.delete(cache_key)
+
+# receiver(post_save, sender=Vendor_loyality_customer_profile)
+# def clear_cache_on_save(sender, instance, created, **kwargs):
+
+#     views_to_clear = ['ViewA', 'ViewB']  
+#     for view_name in views_to_clear:
+#         cache_key = get_cache_key(view_name, instance.user.id)
+#         cache.delete(cache_key)
+    
+# @receiver(post_delete, sender=Vendor_loyality_customer_profile)
+# def clear_cache_on_delete(sender, instance, **kwargs):
+    
+#     views_to_clear = ['ViewA', 'ViewB']  
+#     for view_name in views_to_clear:
+#         cache_key = get_cache_key(view_name, instance.user.id)
+#         cache.delete(cache_key)
+
+# receiver(post_save, sender=VendorCustomerLoyalityLedger)
+# def clear_cache_on_save(sender, instance, created, **kwargs):
+
+#     views_to_clear = ['ViewA', 'ViewB']  
+#     for view_name in views_to_clear:
+#         cache_key = get_cache_key(view_name, instance.user.id)
+#         cache.delete(cache_key)
+    
+# @receiver(post_delete, sender=VendorCustomerLoyalityLedger)
+# def clear_cache_on_delete(sender, instance, **kwargs):
+    
+#     views_to_clear = ['ViewA', 'ViewB']  
+#     for view_name in views_to_clear:
+#         cache_key = get_cache_key(view_name, instance.user.id)
+#         cache.delete(cache_key)
 
