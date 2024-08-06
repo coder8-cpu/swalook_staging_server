@@ -230,9 +230,9 @@ class billing_serailizer(serializers.ModelSerializer):
 
         validated_data['year'] = mon.year
         try:
-                customer = Vendor_Customers.objects.get(mobile_no=validated_data['mobile_no'])
+                customer = VendorCustomers.objects.get(mobile_no=validated_data['mobile_no'])
         except Exception:
-                customer = Vendor_Customers()
+                customer = VendorCustomers()
                 customer.mobile_no = validated_data['mobile_no']
                 customer.email = validated_data['email']
                 customer.user = self.context.get('request').user
@@ -244,7 +244,7 @@ class billing_serailizer(serializers.ModelSerializer):
             if customer.membership_type == "Silver":
                 try:
 
-                    loyality_program_object = Vendor_Customer_Loyality_Points.objects.get(customer_name=customer,vendor_branch=customer.vendor_branch,user=self.context.get('request').user)
+                    loyality_program_object = VendorCustomerLoyalityPoints.objects.get(customer_name=customer,vendor_branch=customer.vendor_branch,user=self.context.get('request').user)
                     loyality_program_object.customer_name = validated_data['customer_name']
                     loyality_program_object.current_customer_points  = loyality_program_object + 10
                     loyality_program_object.vendor_branch = customer.vendor_branch
@@ -252,7 +252,7 @@ class billing_serailizer(serializers.ModelSerializer):
                     loyality_program_object.save()
                     validated_data['loyality_points'] = 10
                 except Exception:
-                    loyality_program_object = Vendor_Customer_Loyality_Points()
+                    loyality_program_object = VendorCustomerLoyalityPoints()
 
                     loyality_program_object.customer_name = validated_data['customer_name']
                     loyality_program_object.current_customer_points  = loyality_program_object + 10
@@ -263,7 +263,7 @@ class billing_serailizer(serializers.ModelSerializer):
             if customer.membership_type == "Gold":
                 try:
 
-                    loyality_program_object = Vendor_Customer_Loyality_Points.objects.get(customer_name=customer,vendor_branch=customer.vendor_branch,user=self.context.get('request').user)
+                    loyality_program_object = VendorCustomerLoyalityPoints.objects.get(customer_name=customer,vendor_branch=customer.vendor_branch,user=self.context.get('request').user)
                     loyality_program_object.customer_name = validated_data['customer_name']
                     loyality_program_object.current_customer_points  = loyality_program_object + 20
                     loyality_program_object.vendor_branch = customer.vendor_branch
@@ -271,7 +271,7 @@ class billing_serailizer(serializers.ModelSerializer):
                     loyality_program_object.save()
                     validated_data['loyality_points'] = 20
                 except Exception:
-                    loyality_program_object = Vendor_Customer_Loyality_Points()
+                    loyality_program_object = VendorCustomerLoyalityPoints()
 
                     loyality_program_object.customer_name = validated_data['customer_name']
                     loyality_program_object.current_customer_points  = loyality_program_object + 50
@@ -283,7 +283,7 @@ class billing_serailizer(serializers.ModelSerializer):
             if customer.membership_type == "Platinum":
                 try:
 
-                    loyality_program_object = Vendor_Customer_Loyality_Points.objects.get(customer_name=customer,vendor_branch=customer.vendor_branch,user=self.context.get('request').user)
+                    loyality_program_object = VendorCustomerLoyalityPoints.objects.get(customer_name=customer,vendor_branch=customer.vendor_branch,user=self.context.get('request').user)
                     loyality_program_object.customer_name = validated_data['customer_name']
                     loyality_program_object.current_customer_points  = loyality_program_object + 10
                     loyality_program_object.vendor_branch = customer.vendor_branch
@@ -291,7 +291,7 @@ class billing_serailizer(serializers.ModelSerializer):
                     loyality_program_object.save()
                     validated_data['loyality_points'] = 10
                 except Exception:
-                    loyality_program_object = Vendor_Customer_Loyality_Points()
+                    loyality_program_object = VendorCustomerLoyalityPoints()
 
                     loyality_program_object.customer_name = validated_data['customer_name']
                     loyality_program_object.current_customer_points  = loyality_program_object + 10
@@ -402,7 +402,7 @@ class Vendor_Pdf_Serializer(serializers.ModelSerializer):
 
 class service_serializer(serializers.ModelSerializer):
     class Meta:
-        model = Vendor_Service
+        model = VendorService
         fields = ["id","service","service_price","service_duration","vendor_branch"]
         extra_kwargs = {'id':{'read_only':True},}
     def create(self,validated_data):
@@ -411,13 +411,13 @@ class service_serializer(serializers.ModelSerializer):
 
 class service_update_serializer(serializers.ModelSerializer):
     class Meta:
-        model = Vendor_Service
+        model = VendorService
         fields = ["service","service_price","service_duration",]
     def create(self,validated_data):
-        queryset = Vendor_Service.objects.get(id=self.context.get('id'))
+        queryset = VendorService.objects.get(id=self.context.get('id'))
 
         queryset.delete()
-        queryset = Vendor_Service()
+        queryset = VendorService()
 
 
         queryset.service = validated_data.get("service")
@@ -432,7 +432,7 @@ class service_update_serializer(serializers.ModelSerializer):
 
 class service_name_serializer(serializers.ModelSerializer):
     class Meta:
-        model = Vendor_Service
+        model = VendorService
         fields = ["id","service",]
 
 class staff_serializer(serializers.ModelSerializer):
@@ -538,9 +538,9 @@ class Inventory_Product_Invoice_Serializer(serializers.ModelSerializer):
         validated_data['user'] = self.context.get('request').user
         validated_data['vendor_branch'] = SalonBranch.objects.get(branch_name=validated_data['vendor_branch_name'])
         try:
-                customer = Vendor_Customers.objects.get(mobile_no=validated_data['mobile_no'])
+                customer = VendorCustomers.objects.get(mobile_no=validated_data['mobile_no'])
         except Exception:
-                customer = Vendor_Customers()
+                customer = VendorCustomers()
                 customer.mobile_no = validated_data['mobile_no']
                 customer.email = validated_data['email']
                 customer.user = self.context.get('request').user
@@ -552,7 +552,7 @@ class Inventory_Product_Invoice_Serializer(serializers.ModelSerializer):
             if customer.membership_type == "Silver":
                 try:
 
-                    loyality_program_object = Vendor_Customer_Loyality_Points.objects.get(customer_name=customer,vendor_branch=customer.vendor_branch,user=self.context.get('request').user)
+                    loyality_program_object = VendorCustomerLoyalityPoints.objects.get(customer_name=customer,vendor_branch=customer.vendor_branch,user=self.context.get('request').user)
                     loyality_program_object.customer_name = validated_data['customer_name']
                     loyality_program_object.current_customer_points  = loyality_program_object + 10
                     loyality_program_object.vendor_branch = customer.vendor_branch
@@ -560,7 +560,7 @@ class Inventory_Product_Invoice_Serializer(serializers.ModelSerializer):
                     loyality_program_object.save()
                     validated_data['loyality_points'] = 10
                 except Exception:
-                    loyality_program_object = Vendor_Customer_Loyality_Points()
+                    loyality_program_object = VendorCustomerLoyalityPoints()
 
                     loyality_program_object.customer_name = validated_data['customer_name']
                     loyality_program_object.current_customer_points  = loyality_program_object + 10
@@ -571,7 +571,7 @@ class Inventory_Product_Invoice_Serializer(serializers.ModelSerializer):
             if customer.membership_type == "Gold":
                 try:
 
-                    loyality_program_object = Vendor_Customer_Loyality_Points.objects.get(customer_name=customer,vendor_branch=customer.vendor_branch,user=self.context.get('request').user)
+                    loyality_program_object = VendorCustomerLoyalityPoints.objects.get(customer_name=customer,vendor_branch=customer.vendor_branch,user=self.context.get('request').user)
                     loyality_program_object.customer_name = validated_data['customer_name']
                     loyality_program_object.current_customer_points  = loyality_program_object + 20
                     loyality_program_object.vendor_branch = customer.vendor_branch
@@ -579,7 +579,7 @@ class Inventory_Product_Invoice_Serializer(serializers.ModelSerializer):
                     loyality_program_object.save()
                     validated_data['loyality_points'] = 20
                 except Exception:
-                    loyality_program_object = Vendor_Customer_Loyality_Points()
+                    loyality_program_object = VendorCustomerLoyalityPoints()
 
                     loyality_program_object.customer_name = validated_data['customer_name']
                     loyality_program_object.current_customer_points  = loyality_program_object + 50
@@ -591,7 +591,7 @@ class Inventory_Product_Invoice_Serializer(serializers.ModelSerializer):
             if customer.membership_type == "Platinum":
                 try:
 
-                    loyality_program_object = Vendor_Customer_Loyality_Points.objects.get(customer_name=customer,vendor_branch=customer.vendor_branch,user=self.context.get('request').user)
+                    loyality_program_object = VendorCustomerLoyalityPoints.objects.get(customer_name=customer,vendor_branch=customer.vendor_branch,user=self.context.get('request').user)
                     loyality_program_object.customer_name = validated_data['customer_name']
                     loyality_program_object.current_customer_points  = loyality_program_object + 10
                     loyality_program_object.vendor_branch = customer.vendor_branch
@@ -599,7 +599,7 @@ class Inventory_Product_Invoice_Serializer(serializers.ModelSerializer):
                     loyality_program_object.save()
                     validated_data['loyality_points'] = 10
                 except Exception:
-                    loyality_program_object = Vendor_Customer_Loyality_Points()
+                    loyality_program_object = VendorCustomerLoyalityPoints()
 
                     loyality_program_object.customer_name = validated_data['customer_name']
                     loyality_program_object.current_customer_points  = loyality_program_object + 10
@@ -620,7 +620,7 @@ class Inventory_Product_Invoice_Serializer(serializers.ModelSerializer):
 
 class VendorCustomerLoyalityProfileSerializer(serializers.ModelSerializer):
     class Meta:
-        model =  Vendor_Customers
+        model =  VendorCustomers
         fields = ["id","name","mobile_no","email","membership_type","vendor_branch_name"]
         extra_kwargs = {'id':{'read_only':True},}
 
@@ -628,7 +628,7 @@ class VendorCustomerLoyalityProfileSerializer(serializers.ModelSerializer):
         validated_data['user'] = self.context.get('request').user
         vendor_branch_name = SalonBranch.objects.get(branch_name=validated_data['vendor_branch_name'])
         validated_data['vendor_branch'] = vendor_branch_name
-        obj_loyality = Vendor_Customer_Loyality_Points()
+        obj_loyality = VendorCustomerLoyalityPoints()
         obj_loyality.customer_name = validated_data['name']
         if validated_data['membership_type'] == "Silver":
             obj_loyality.current_customer_points = 10

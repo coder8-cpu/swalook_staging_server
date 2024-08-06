@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 import os
+from decouple import config
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -20,10 +21,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-b4+v(klybt0y9aghbnn=4qc+qr!#&)w3j)z_%7xbu)$mgx*z&3'
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG',cast=bool)
 
 ALLOWED_HOSTS = ["*"]
 
@@ -55,6 +56,15 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+# settings.py
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': f'{BASE_DIR}/cache',
+    }
+}
+
 
 CORS_ORIGIN_ALLOW_ALL = True
 ROOT_URLCONF = 'api_swalook.urls'
@@ -87,7 +97,14 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'api_swalook.wsgi.application'
 
-
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_SSL_REDIRECT = True
+SECURE_HSTS_SECONDS = 86400
+SECURE_HSTS_PRELOAD = True
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
@@ -149,13 +166,13 @@ USE_I18N = True
 USE_TZ = True
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'mail.swalook.in' # e.g., mail.yourdomain.com
+EMAIL_HOST = config('EMAIL_HOST') # e.g., mail.yourdomain.com
 EMAIL_PORT = 465 # Update the port accordingly (587 for TLS, 465 for SSL, 25 for non-secure)
 EMAIL_USE_TLS = False  # Set to False if using SSL
 EMAIL_USE_SSL =  True  # Set to True if using SSL
-EMAIL_HOST_USER = 'info@swalook.in'  # Your email username
-EMAIL_HOST_PASSWORD = 'rf4TwJbh456#' # Your email password
-DEFAULT_FROM_EMAIL = 'info@swalook.in'  # The default "from" address for sending emails
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')  # Your email username
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD') # Your email password
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')  # The default "from" address for sending emails
 
 # # mail configure - dbmcrj
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -184,8 +201,8 @@ MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR,'media')
 
-WP_INS_TOKEN = "35hsa7qwv8wjwitx"
-WP_INS_ID = "instance90232"
+WP_INS_TOKEN = config('WP_INS_TOKEN')
+WP_INS_ID = config('WP_INS_ID')
 WP_API_URL = "https://api.ultramsg.com/instance90232/"
 WKHTML2PDF_PATH = "/home/swalooki/api_swalook-main/wkhtmltopdf.exe"
 
