@@ -13,14 +13,16 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.views.static import serve
 from django.contrib import admin
-from django.urls import path,include
+from django.urls import path,include,re_path
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework_simplejwt.views import TokenObtainPairView,TokenRefreshView
 from _api_.views import *
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns # new
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('swalook_admin_sql/', admin.site.urls),
     path('update_file/', update_files_pull.as_view()),
     path("restart_server/", restart_server.as_view()),
     # path('swalook_token_ii091/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
@@ -70,11 +72,13 @@ urlpatterns = [
     path('api/swalook/inventory/product/show/<branch_name>/',Add_Inventory_Product.as_view()),
     path('api/swalook/inventory/invoice/',Bill_Inventory.as_view()),
     path('api/swalook/loyality_program/add/customer/<branch_name>/',Vendor_loyality_customer_profile.as_view()),
-
+    re_path(r'^media/{}/(?P<path>.*)$'.format(settings.MEDIA_URL_PREFIX), serve, {'document_root': settings.MEDIA_ROOT}),
+    re_path(r'^static/{}/(?P<path>.*)$'.format(settings.STATIC_URL_PREFIX), serve, {'document_root': settings.STATIC_ROOT}),
     
     
     
     
 
-]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+]
+
+

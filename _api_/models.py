@@ -124,7 +124,7 @@ class VendorInvoice(models.Model):
     email = models.CharField(max_length=50, blank=True)
     services = models.CharField(max_length=10000)
     service_by = models.CharField(max_length=40)
-    total_price = models.DecimalField(default=0, max_digits=100, decimal_places=2, blank=True)
+    total_prise = models.DecimalField(default=0, max_digits=100, decimal_places=2, blank=True)
     total_tax = models.DecimalField(default=0, max_digits=100, decimal_places=2, blank=True)
     total_discount = models.DecimalField(max_digits=100, decimal_places=2, default=0, blank=True)
     gst_number = models.CharField(max_length=20, blank=True)
@@ -178,14 +178,17 @@ class VendorAppointment(models.Model):
     vendor_branch = models.ForeignKey(SalonBranch, on_delete=models.SET_NULL, null=True)
     vendor_branch_name = models.CharField(max_length=255, null=True, blank=True)
     customer_name = models.CharField(max_length=255)
-    appointment_date = models.DateField()
-    appointment_time = models.TimeField()
+    services = models.CharField(max_length=255)
+
+    booking_date = models.DateField()
+    date = models.DateField()
+    booking_time = models.TimeField()
     email = models.CharField(max_length=50)
     mobile_no = models.CharField(max_length=10, blank=True)
     comment = models.CharField(max_length=255, blank=True)
 
     class Meta:
-        ordering = ['appointment_date']
+        ordering = ['booking_date']
         verbose_name = "Vendor Appointment"
 
     def __str__(self):
