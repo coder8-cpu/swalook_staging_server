@@ -3,4 +3,5 @@ static
 wkhtmltopdf.exe
 media
 .env
-migrations
+cache
+requirements.txt

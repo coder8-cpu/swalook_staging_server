@@ -99,7 +99,7 @@ WSGI_APPLICATION = 'api_swalook.wsgi.application'
 
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
-SECURE_SSL_REDIRECT = True
+# SECURE_SSL_REDIRECT = True
 SECURE_HSTS_SECONDS = 86400
 SECURE_HSTS_PRELOAD = True
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
@@ -188,18 +188,30 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')  # The default "from" address 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
+# settings.py
+STATIC_URL_PREFIX = config('STATIC_URL_PREFIX')
+MEDIA_URL_PREFIX  = config('MEDIA_URL_PREFIX')
 
-STATIC_URL = 'static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR,'statics'),
-                    # os.path.join(BASE_DIR,'admins/statics'),
-                   
-                    ]
-
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-
+STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
+# STATICFILES_DIRS = [os.path.join(BASE_DIR, 'statics')]
+if DEBUG:
 
-MEDIA_ROOT = os.path.join(BASE_DIR,'media')
+    STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+
+else:
+
+    STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+
+
+
+
+
+
 
 WP_INS_TOKEN = config('WP_INS_TOKEN')
 WP_INS_ID = config('WP_INS_ID')

@@ -237,7 +237,7 @@ class billing_serailizer(serializers.ModelSerializer):
                 customer.email = validated_data['email']
                 customer.user = self.context.get('request').user
                 customer.vendor_branch = SalonBranch.objects.get(branch_name=validated_data['vendor_branch_name'])
-                customer.membership_type = None
+                customer.membership_type = ""
                 customer.save()
         if validated_data['grand_total'] >= 100:
 
@@ -311,14 +311,13 @@ class billing_serailizer(serializers.ModelSerializer):
 
         validated_data['vendor_customers_profile'] = customer
 
-        super().create(validated_data)
+        
 
 
 
 
 
-
-        return  validated_data['slno']
+        return super().create(validated_data)
 
 class billing_serailizer_get(serializers.ModelSerializer):
     class Meta:
